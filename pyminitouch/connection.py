@@ -5,6 +5,7 @@ from contextlib import contextmanager
 
 from pyminitouch.logger import logger
 from pyminitouch import config
+from pyminitouch.utils import str2byte
 
 
 class MNTInstaller(object):
@@ -79,9 +80,7 @@ class MNTConnection(object):
 
     def __init__(self, port):
         self.port = port
-        self.client = None
 
-    def connect(self):
         # build connection
         client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         client.connect((self._DEFAULT_HOST, self.port))
@@ -95,7 +94,7 @@ class MNTConnection(object):
 
     def send(self, content):
         """ send message and get its response """
-        byte_content = content.encode(config.DEFAULT_CHARSET)
+        byte_content = str2byte(content)
         self.client.sendall(byte_content)
         return self.client.recv(self._DEFAULT_BUFFER_SIZE)
 
@@ -104,10 +103,8 @@ class MNTConnection(object):
 def build_connection(device_id):
     # prepare for connection
     server = MNTServer(device_id)
-
     # real connection
     connection = MNTConnection(server.port)
-    connection.connect()
 
     yield connection
 
