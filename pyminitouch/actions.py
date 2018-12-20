@@ -8,7 +8,7 @@ def connection_wrapper(func):
     @functools.wraps(func)
     def wrapper(self, *args, **kwargs):
         operation = func(self, *args, **kwargs)
-        logger.info('send operation: {}'.format(operation))
+        logger.info('send operation: {}'.format(operation.replace('\n', '\linesep')))
         self.connection.send(operation)
     return wrapper
 
