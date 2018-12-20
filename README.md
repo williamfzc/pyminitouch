@@ -1,5 +1,7 @@
 # pyminitouch
 
+**STILL IN PROGRESS**
+
 python wrapper of [minitouch](https://github.com/openstf/minitouch), for better experience.
 
 ## 目标
