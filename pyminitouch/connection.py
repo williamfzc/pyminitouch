@@ -3,6 +3,7 @@ import socket
 import time
 
 from pyminitouch.logger import logger
+from pyminitouch import config
 
 
 class MNTInstaller(object):
@@ -19,7 +20,7 @@ class MNTServer(object):
         adb forward tcp:{some_port} localabstract:minitouch
         adb shell /data/local/tmp/minitouch
     """
-    _PORT_SET = set(range(47000, 47500))
+    _PORT_SET = config.PORT_SET
 
     def __init__(self, device_id):
         self.device_id = device_id
@@ -63,7 +64,7 @@ class MNTServer(object):
             '/data/local/tmp/minitouch'
         ]
         logger.info('start minitouch: {}'.format(' '.join(command_list)))
-        self.mnt_process = subprocess.Popen(command_list)
+        self.mnt_process = subprocess.Popen(command_list, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
     def heartbeat(self):
         """ check if minitouch process alive """
@@ -71,7 +72,9 @@ class MNTServer(object):
 
 
 class MNTConnection(object):
-    _DEFAULT_HOST = '127.0.0.1'
+    """ manage socket connection between pc and android """
+    _DEFAULT_HOST = config.DEFAULT_HOST
+    _DEFAULT_BUFFER_SIZE = config.DEFAULT_BUFFER_SIZE
 
     def __init__(self, port):
         self.port = port
@@ -89,6 +92,12 @@ class MNTConnection(object):
         self.client = None
         logger.info('minitouch disconnected')
 
+    def send(self, content):
+        """ send message and get its response """
+        byte_content = content.encode(config.DEFAULT_CHARSET)
+        self.client.sendall(byte_content)
+        return self.client.recv(self._DEFAULT_BUFFER_SIZE)
+
 
 if __name__ == '__main__':
     _DEVICE_ID = '3d33076e'
@@ -100,7 +109,8 @@ if __name__ == '__main__':
     connection = MNTConnection(server.port)
     connection.connect()
 
-    # add operation here
+    # example operation
+    connection.send('d 0 150 150 50\nc\nu 0\nc\n')
 
     # disconnect
     connection.disconnect()
