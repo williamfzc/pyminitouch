@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='pyminitouch',
-    version='0.0.1',
+    version='0.1.0',
     description='python wrapper of minitouch, for better experience',
     author='williamfzc',
     author_email='fengzc@vip.qq.com',
