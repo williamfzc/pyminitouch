@@ -11,6 +11,7 @@ device = MNTDevice(_DEVICE_ID)
 device.tap(800, 900)
 device.tap(600, 900)
 device.tap(400, 900)
+device.swipe(100, 100, 800, 800)
 
 device.stop()
 

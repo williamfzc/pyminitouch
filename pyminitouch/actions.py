@@ -1,8 +1,10 @@
 import functools
+import time
 from contextlib import contextmanager
 
 from pyminitouch.logger import logger
 from pyminitouch.connection import MNTConnection, MNTServer
+from pyminitouch import config
 
 
 def connection_wrapper(func):
@@ -10,6 +12,7 @@ def connection_wrapper(func):
     def wrapper(self, *args, **kwargs):
         operation = func(self, *args, **kwargs)
         logger.info('send operation: {}'.format(operation.replace('\n', '\linesep')))
+        time.sleep(config.DEFAULT_DELAY)
         self.connection.send(operation)
     return wrapper
 

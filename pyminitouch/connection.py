@@ -112,7 +112,7 @@ def safe_connection(device_id):
 
     # disconnect
     connection.disconnect()
-    del server
+    server.stop()
 
 
 if __name__ == '__main__':
