@@ -43,6 +43,8 @@ class MNTServer(object):
         self._PORT_SET.add(self.port)
         logger.info('device {} unbind to {}'.format(self.device_id, self.port))
 
+    stop = __del__
+
     @classmethod
     def _get_port(cls):
         """ get a random port from port set """
