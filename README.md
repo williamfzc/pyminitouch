@@ -2,8 +2,6 @@
 
 [![PyPI version](https://badge.fury.io/py/pyminitouch.svg)](https://badge.fury.io/py/pyminitouch)
 
-**STILL IN PROGRESS**
-
 python wrapper of [minitouch](https://github.com/openstf/minitouch), for better experience.
 
 ## 目标
@@ -20,17 +18,15 @@ minitouch 是 openstf 基于 ndk + android 开发的用于模拟人类点击行�
 
 ## 设计
 
-### 层级架构
+### 安装
 
-- [x] 连接层
-    - 管理与android设备上的minitouch的连接
-    - 稳定性与连接机制等
-- [x] 基础方法层
-    - 将minitouch提供的简单原生方法进行基础封装
-    - 基础方法可被用于构建上层应用
-- [ ] 自定义方法层
-    - 将基础方法进行二次封装达到更复杂的操作效果
-    - 方便开发者进行自由定制
+直接用pip安装
+
+```
+pip install pyminitouch
+```
+
+你不再需要关心设备cpu架构、minitouch版本与权限授予等等，这一切将自动完成。
 
 ### API
 
@@ -81,9 +77,21 @@ with safe_connection(_DEVICE_ID) as conn:
     conn.send(_OPERATION)
 ```
 
+### 层级架构
+
+- [x] 连接层
+    - 管理与android设备上的minitouch的连接
+    - 稳定性与连接机制等
+- [x] 基础方法层
+    - 将minitouch提供的简单原生方法进行基础封装
+    - 基础方法可被用于构建上层应用
+- [ ] 自定义方法层
+    - 将基础方法进行二次封装达到更复杂的操作效果
+    - 方便开发者进行自由定制
+
 ## TODO
 
-- [ ] 根据手机类型自动安装指定版本的 minitouch
+- [x] 根据手机类型自动安装指定版本的 minitouch
 - [ ] 端口占用检查
 - [ ] 多点触控
 

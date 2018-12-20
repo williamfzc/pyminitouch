@@ -1,17 +1,46 @@
 import subprocess
 import socket
 import time
+import os
 from contextlib import contextmanager
 
 from pyminitouch.logger import logger
 from pyminitouch import config
-from pyminitouch.utils import str2byte
+from pyminitouch.utils import str2byte, download_file
 
 
 class MNTInstaller(object):
     """ install minitouch for android devices """
-    # TODO match version
-    # TODO auto install
+    def __init__(self, device_id):
+        self.device_id = device_id
+        self.abi = self.get_abi()
+        if self.is_mnt_existed():
+            logger.info('minitouch already existed in {}'.format(device_id))
+        else:
+            self.download_target_mnt()
+
+    def get_abi(self):
+        abi = subprocess.getoutput('adb -s {} shell getprop ro.product.cpu.abi'.format(self.device_id))
+        logger.info('device {} is {}'.format(self.device_id, abi))
+        return abi
+
+    def download_target_mnt(self):
+        abi = self.get_abi()
+        target_url = '{}/{}/bin/minitouch'.format(config.MNT_PREBUILT_URL, abi)
+        logger.info('target minitouch url: ' + target_url)
+        mnt_path = download_file(target_url)
+
+        # push and grant
+        subprocess.check_output('adb -s {} push {} /data/local/tmp/minitouch'.format(self.device_id, mnt_path))
+        subprocess.check_output('adb -s {} shell chmod 777 /data/local/tmp/minitouch'.format(self.device_id))
+        logger.info('minitouch already installed in /data/local/tmp/')
+
+        # remove temp
+        os.remove(mnt_path)
+
+    def is_mnt_existed(self):
+        file_list = subprocess.check_output('adb -s {} shell ls /data/local/tmp'.format(self.device_id))
+        return 'minitouch' in file_list.decode(config.DEFAULT_CHARSET)
 
 
 class MNTServer(object):
@@ -28,6 +57,9 @@ class MNTServer(object):
         self.device_id = device_id
         self.port = self._get_port()
         logger.info('device {} bind to port {}'.format(device_id, self.port))
+
+        # check minitouch
+        self.installer = MNTInstaller(device_id)
 
         # keep minitouch alive
         self._forward_port()
