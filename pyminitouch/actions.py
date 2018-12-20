@@ -40,13 +40,25 @@ class MNTDevice(object):
     def _end_action(action):
         return action + 'c\n'
 
+    # TODO multi tap
+
     @connection_wrapper
-    def tap(self, x, y, pressure, delay=None):
+    def tap(self, x, y, pressure=100, duration=None):
         # operation str
         operation_str = 'd 0 {} {} {}\n'.format(x, y, pressure)
         # if pause
-        if delay:
-            self._merge_action(operation_str, 'w {}\n'.format(delay))
+        if duration:
+            self._merge_action(operation_str, 'w {}\n'.format(duration))
+        operation_str = self._merge_action(operation_str, 'u 0\n')
+        operation_str = self._end_action(operation_str)
+        return operation_str
+    
+    @connection_wrapper
+    def swipe(self, x1, y1, x2, y2, pressure=100):
+        # operation str
+        operation_str = 'd 0 {} {} {}\n'.format(x1, y1, pressure)
+        swipe_operation = 'm 0 {} {} {}\n'.format(x2, y2, pressure)
+        operation_str = self._merge_action(operation_str, swipe_operation)
         operation_str = self._merge_action(operation_str, 'u 0\n')
         operation_str = self._end_action(operation_str)
         return operation_str
@@ -65,14 +77,15 @@ if __name__ == '__main__':
     # option1:
     device = MNTDevice(_DEVICE_ID)
 
-    device.tap(800, 900, 50)
-    device.tap(600, 900, 50)
-    device.tap(400, 900, 50)
+    device.tap(800, 900)
+    device.tap(600, 900)
+    device.tap(400, 900)
 
     device.stop()
 
     # option2:
     with safe_device(_DEVICE_ID) as device:
-        device.tap(800, 900, 50)
-        device.tap(600, 900, 50)
-        device.tap(400, 900, 50)
+        device.tap(800, 900)
+        device.tap(600, 900)
+        device.tap(400, 900)
+        device.swipe(100, 100, 800, 800)

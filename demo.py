@@ -8,17 +8,17 @@ _DEVICE_ID = '3d33076e'
 # option1:
 device = MNTDevice(_DEVICE_ID)
 
-device.tap(800, 900, 50)
-device.tap(600, 900, 50)
-device.tap(400, 900, 50)
+device.tap(800, 900)
+device.tap(600, 900)
+device.tap(400, 900)
 
 device.stop()
 
 # option2:
 with safe_device(_DEVICE_ID) as device:
-    device.tap(800, 900, 50)
-    device.tap(600, 900, 50)
-    device.tap(400, 900, 50)
+    device.tap(800, 900)
+    device.tap(600, 900)
+    device.tap(400, 900)
 
 
 # low level API

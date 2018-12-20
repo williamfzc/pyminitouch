@@ -85,6 +85,7 @@ with safe_connection(_DEVICE_ID) as conn:
 
 - [ ] 根据手机类型自动安装指定版本的 minitouch
 - [ ] 端口占用检查
+- [ ] 多点触控
 
 ## Bug & 建议
 
