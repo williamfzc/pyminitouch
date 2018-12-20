@@ -30,6 +30,8 @@ pip install pyminitouch
 
 ### API
 
+可以阅读[demo.py](demo.py)
+
 #### Normal API
 
 pyminitouch解放了原来非常难用的方法，你可以用下面两种方式进行调用。
@@ -43,17 +45,18 @@ _DEVICE_ID = '3d33076e'
 # option1:
 device = MNTDevice(_DEVICE_ID)
 
-device.tap(800, 900, 50)
-device.tap(600, 900, 50)
-device.tap(400, 900, 50)
+device.tap(800, 900)
+device.tap(600, 900)
+device.tap(400, 900)
+device.swipe(100, 100, 800, 800)
 
 device.stop()
 
 # option2:
 with safe_device(_DEVICE_ID) as device:
-    device.tap(800, 900, 50)
-    device.tap(600, 900, 50)
-    device.tap(400, 900, 50)
+    device.tap(800, 900)
+    device.tap(600, 900)
+    device.tap(400, 900)
 
 ```
 
