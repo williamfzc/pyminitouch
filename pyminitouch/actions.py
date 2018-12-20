@@ -1,4 +1,5 @@
 import functools
+from contextlib import contextmanager
 
 from pyminitouch.logger import logger
 from pyminitouch.connection import MNTConnection, MNTServer
@@ -51,9 +52,27 @@ class MNTDevice(object):
         return operation_str
 
 
+@contextmanager
+def safe_device(device_id):
+    device = MNTDevice(device_id)
+    yield device
+    device.stop()
+
+
 if __name__ == '__main__':
-    device = MNTDevice('3d33076e')
+    _DEVICE_ID = '3d33076e'
+
+    # option1:
+    device = MNTDevice(_DEVICE_ID)
 
     device.tap(800, 900, 50)
     device.tap(600, 900, 50)
     device.tap(400, 900, 50)
+
+    device.stop()
+
+    # option2:
+    with safe_device(_DEVICE_ID) as device:
+        device.tap(800, 900, 50)
+        device.tap(600, 900, 50)
+        device.tap(400, 900, 50)

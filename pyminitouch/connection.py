@@ -102,7 +102,7 @@ class MNTConnection(object):
 
 
 @contextmanager
-def build_connection(device_id):
+def safe_connection(device_id):
     # prepare for connection
     server = MNTServer(device_id)
     # real connection
@@ -118,5 +118,5 @@ def build_connection(device_id):
 if __name__ == '__main__':
     _DEVICE_ID = '3d33076e'
 
-    with build_connection(_DEVICE_ID) as conn:
+    with safe_connection(_DEVICE_ID) as conn:
         conn.send('d 0 150 150 50\nc\nu 0\nc\n')
