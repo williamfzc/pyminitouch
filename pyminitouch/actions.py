@@ -47,17 +47,19 @@ class MNTDevice(object):
 
     @connection_wrapper
     def tap(self, x, y, pressure=100, duration=None):
+        """ tap on screen, with pressure/duration """
         # operation str
         operation_str = 'd 0 {} {} {}\n'.format(x, y, pressure)
         # if pause
         if duration:
-            self._merge_action(operation_str, 'w {}\n'.format(duration))
+            operation_str = self._merge_action(operation_str, 'w {}\n'.format(duration))
         operation_str = self._merge_action(operation_str, 'u 0\n')
         operation_str = self._end_action(operation_str)
         return operation_str
     
     @connection_wrapper
     def swipe(self, x1, y1, x2, y2, pressure=100):
+        """ swipe from (x1, y1) to (x2, y2) """
         # operation str
         operation_str = 'd 0 {} {} {}\n'.format(x1, y1, pressure)
         swipe_operation = 'm 0 {} {} {}\n'.format(x2, y2, pressure)
