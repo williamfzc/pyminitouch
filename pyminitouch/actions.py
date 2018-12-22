@@ -8,6 +8,8 @@ from pyminitouch.utils import restart_adb
 
 
 class CommandBuilder(object):
+    """ build command str for minitouch """
+    # TODO (x, y) can not beyond the screen size
     def __init__(self):
         self._content = ''
 

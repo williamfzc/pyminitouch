@@ -29,12 +29,19 @@ from pyminitouch.actions import safe_device
 
 
 _DEVICE_ID = '123456F'
+device = MNTDevice(_DEVICE_ID)
 
-with safe_device(_DEVICE_ID) as device:
-    device.tap(800, 900)
-    device.tap(600, 900)
-    device.tap(400, 900)
+# single-tap
+device.tap([(400, 600)])
+# multi-tap
+device.tap([(400, 400), (600, 600)])
+# set the pressure, default == 100
+device.tap([(400, 600)], pressure=50)
+
+# ... and something else you want, just like minitouch itself!
 ```
+
+Read [demo.py](demo.py) for detail.
 
 ## Installation
 
@@ -43,10 +50,6 @@ Please use python3.
 ```
 pip install pyminitouch
 ```
-
-### API
-
-Read [demo.py](demo.py) for detail.
 
 ## Bug & Suggestion
 

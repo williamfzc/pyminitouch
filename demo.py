@@ -4,33 +4,45 @@ from pyminitouch.connection import safe_connection
 from pyminitouch.actions import MNTDevice, safe_device
 
 
-_DEVICE_ID = '3d33076e'
-
-# high level API
-# option1:
+_DEVICE_ID = '4df189487c7b6fef'
 device = MNTDevice(_DEVICE_ID)
 
-device.tap(600, 900)
-device.tap(400, 900)
+# single-tap
+device.tap([(400, 600)])
+# multi-tap
+device.tap([(400, 400), (600, 600)])
+# set the pressure, default == 100
+device.tap([(400, 600)], pressure=50)
 
+# long-time-tap
 # for long-click, you should control time delay by yourself
 # because minitouch return nothing when actions done
 # we will never know the time when it finished
-device.tap(800, 900, duration=1000)
+device.tap([(400, 600)], duration=1000)
 time.sleep(1)
 
-device.swipe(100, 100, 800, 800)
 
+# swipe
+device.swipe([(100, 100), (800, 800)])
+
+# stop minitouch
+# when it was stopped, minitouch can do nothing for device, including release.
 device.stop()
 
-# option2:
+
+# In another way, you needn't consider about device's life-cycle.
+# context manager will handle it
 with safe_device(_DEVICE_ID) as device:
-    device.tap(800, 900)
-    device.tap(600, 900)
-    device.tap(400, 900)
+    # single-tap
+    device.tap([(400, 600)])
+    # multi-tap
+    device.tap([(400, 400), (600, 600)])
+    # set the pressure, default == 100
+    device.tap([(400, 600)], pressure=50)
 
 
-# low level API
+# What's more, you can also access low level API for further usage.
+# send raw text to it
 _OPERATION = '''
 d 0 150 150 50\n
 c\n
