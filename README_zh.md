@@ -4,9 +4,54 @@
 
 python wrapper of [minitouch](https://github.com/openstf/minitouch), for better experience.
 
+[English Document](README.md)
+
 ## 目标
 
 该项目将对 [minitouch](https://github.com/openstf/minitouch) 进行封装，致力于降低使用成本，使这个库能够更好的被利用起来。
+
+## TL;DR
+
+### Before
+
+- 检查设备CPU类型
+- 下载指定版本的minitouch（或者自己build）
+- 把它push到手机上，授权，运行它
+- 创建socket，连接到它
+- 通过socket传递信息，然而你的信息看起来是这样的：
+    - `d 0 150 150 50\nc\nu 0\nc\n`
+    - 可读性较低
+
+是个非常繁琐的流程。
+
+### After
+
+```python
+from pyminitouch.actions import safe_device
+
+
+_DEVICE_ID = '123456F'
+device = MNTDevice(_DEVICE_ID)
+
+# single-tap
+device.tap([(400, 600)])
+# multi-tap
+device.tap([(400, 400), (600, 600)])
+# set the pressure, default == 100
+device.tap([(400, 600)], pressure=50)
+
+# 可以直接用简洁的API调用minitouch提供的强大功能！
+```
+
+更多使用方式见 [demo.py](demo.py)
+
+## 安装
+
+请使用python3
+
+```
+pip install pyminitouch
+```
 
 ## 意义
 
@@ -15,88 +60,6 @@ minitouch 是 openstf 基于 ndk + android 开发的用于模拟人类点击行�
 然而，因为其使用与安装的方式都较为繁琐，且无法定位到元素，使得它在自动化的应用领域上远远比不上uiautomator。
 
 但他的实现机制与其他模拟方式不同，能够真正模拟物理点击的效果（uiautomator属于软件层面上的模拟），更加接近真实点击的效果。举个例子，打开 开发者模式-显示点击位置，同类产品在模拟点击时不会有"小圆圈"，而minitouch有，表现与真实人手点击一致。
-
-## 设计
-
-### 安装
-
-直接用pip安装
-
-```
-pip install pyminitouch
-```
-
-你不再需要关心设备cpu架构、minitouch版本与权限授予等等，这一切将自动完成。
-
-### API
-
-可以阅读[demo.py](demo.py)
-
-#### Normal API
-
-pyminitouch解放了原来非常难用的方法，你可以用下面两种方式进行调用。
-
-```python
-from pyminitouch.actions import MNTDevice, safe_device
-
-
-_DEVICE_ID = '3d33076e'
-
-# option1:
-device = MNTDevice(_DEVICE_ID)
-
-device.tap(800, 900)
-device.tap(600, 900)
-device.tap(400, 900)
-device.swipe(100, 100, 800, 800)
-
-device.stop()
-
-# option2:
-with safe_device(_DEVICE_ID) as device:
-    device.tap(800, 900)
-    device.tap(600, 900)
-    device.tap(400, 900)
-
-```
-
-#### Low Level API
-
-你可以将pyminitouch作为一个简单的socket通信使用：
-
-```python
-from pyminitouch.connection import safe_connection
-
-
-_DEVICE_ID = '3d33076e'
-_OPERATION = '''
-d 0 150 150 50\n
-c\n
-u 0\n
-c\n
-'''
-
-with safe_connection(_DEVICE_ID) as conn:
-    conn.send(_OPERATION)
-```
-
-### 层级架构
-
-- [x] 连接层
-    - 管理与android设备上的minitouch的连接
-    - 稳定性与连接机制等
-- [x] 基础方法层
-    - 将minitouch提供的简单原生方法进行基础封装
-    - 基础方法可被用于构建上层应用
-- [ ] 自定义方法层
-    - 将基础方法进行二次封装达到更复杂的操作效果
-    - 方便开发者进行自由定制
-
-## TODO
-
-- [x] 根据手机类型自动安装指定版本的 minitouch
-- [ ] 端口占用检查
-- [ ] 多点触控
 
 ## Bug & 建议
 
