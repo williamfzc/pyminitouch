@@ -1,4 +1,3 @@
-import functools
 import time
 from contextlib import contextmanager
 
@@ -6,16 +5,6 @@ from pyminitouch.logger import logger
 from pyminitouch.connection import MNTConnection, MNTServer
 from pyminitouch import config
 from pyminitouch.utils import restart_adb
-
-
-def connection_wrapper(func):
-    @functools.wraps(func)
-    def wrapper(self, *args, **kwargs):
-        operation = func(self, *args, **kwargs)
-        logger.info('send operation: {}'.format(operation.replace('\n', '\linesep')))
-        time.sleep(config.DEFAULT_DELAY)
-        self.connection.send(operation)
-    return wrapper
 
 
 class CommandBuilder(object):
@@ -84,17 +73,41 @@ class MNTDevice(object):
         for each_id in range(len(points)):
             builder.release(each_id)
         builder.publish(self.connection)
-    
-    @connection_wrapper
-    def swipe(self, points, pressure=100):
-        """ swipe from (x1, y1) to (x2, y2) """
-        # TODO
+
+    def swipe(self, points, pressure=100, duration=None):
+        """
+        swipe between points, one by one
+
+        :param points: [(400, 500), (500, 500)]
+        :param pressure: default == 100
+        :param duration:
+        :return:
+        """
+        builder = CommandBuilder()
+        point_id = 0
+        # tap the first point
+        x, y = points.pop(0)
+        builder.append('d {} {} {} {}'.format(point_id, x, y, pressure))
+        builder.commit()
+
+        # start swiping
+        for each_point in points:
+            x, y = each_point
+            builder.append('m {} {} {} {}'.format(point_id, x, y, pressure))
+            builder.commit()
+            if duration:
+                builder.wait(duration)
+                builder.commit()
+        # release
+        builder.release(point_id)
+        builder.publish(self.connection)
 
 
 @contextmanager
 def safe_device(device_id):
     device = MNTDevice(device_id)
     yield device
+    time.sleep(config.DEFAULT_DELAY)
     device.stop()
 
 
@@ -106,10 +119,15 @@ if __name__ == '__main__':
     # option1:
     device = MNTDevice(_DEVICE_ID)
     device.tap([(400, 500), (500, 500)], duration=1000)
+
+    # you should control time delay by yourself
+    # otherwise when connection lost, action will never stop.
     time.sleep(1)
+
     device.stop()
 
     # option2:
     with safe_device(_DEVICE_ID) as device:
         device.tap([(400, 500), (500, 500)])
-        device.tap([(400, 500), (500, 500)])
+        device.swipe([(400, 500), (500, 500)], duration=500)
+        time.sleep(0.5)
