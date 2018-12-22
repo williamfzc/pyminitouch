@@ -22,7 +22,28 @@ class CommandBuilder(object):
     def __init__(self):
         self._content = ''
 
-    # TODO manage command str with this class
+    def append(self, new_content):
+        self._content += new_content + '\n'
+
+    def commit(self):
+        self.append('c')
+
+    def wait(self, ms):
+        self.append('w {}'.format(ms))
+
+    def release(self, contact_id):
+        self.append('u {}'.format(contact_id))
+
+    def publish(self, connection):
+        self.commit()
+        final_content = self._content
+        logger.info('send operation: {}'.format(final_content.replace('\n', '\\n')))
+        time.sleep(config.DEFAULT_DELAY)
+        connection.send(final_content)
+        self.reset()
+
+    def reset(self):
+        self._content = ''
 
 
 class MNTDevice(object):
@@ -41,17 +62,6 @@ class MNTDevice(object):
         self.connection.disconnect()
         self.server.stop()
 
-    @staticmethod
-    def _merge_action(old_action, new_action):
-        return old_action + 'c\n' + new_action
-
-    @staticmethod
-    def _end_action(action):
-        return action + 'c\n'
-
-    # TODO multi tap
-
-    @connection_wrapper
     def tap(self, points, pressure=100, duration=None):
         """
         tap on screen, with pressure/duration
@@ -61,33 +71,24 @@ class MNTDevice(object):
         :param duration:
         :return:
         """
-        operation_str = ''
+        builder = CommandBuilder()
         for point_id, each_point in enumerate(points):
             x, y = each_point
-
-            # operation str
-            operation_str += 'd {} {} {} {}\n'.format(point_id, x, y, pressure)
-            # if pause
-            if duration:
-                operation_str = self._merge_action(operation_str, 'w {}\n'.format(duration))
+            builder.append('d {} {} {} {}'.format(point_id, x, y, pressure))
+        builder.commit()
+        # apply duration
+        if duration:
+            builder.wait(duration)
+            builder.commit()
         # release
-        operation_str = self._end_action(operation_str)
         for each_id in range(len(points)):
-            operation_str = self._merge_action(operation_str, 'u {}\n'.format(each_id))
-        # apply actions
-        operation_str = self._end_action(operation_str)
-        return operation_str
+            builder.release(each_id)
+        builder.publish(self.connection)
     
     @connection_wrapper
-    def swipe(self, x1, y1, x2, y2, pressure=100):
+    def swipe(self, points, pressure=100):
         """ swipe from (x1, y1) to (x2, y2) """
-        # operation str
-        operation_str = 'd 0 {} {} {}\n'.format(x1, y1, pressure)
-        swipe_operation = 'm 0 {} {} {}\n'.format(x2, y2, pressure)
-        operation_str = self._merge_action(operation_str, swipe_operation)
-        operation_str = self._merge_action(operation_str, 'u 0\n')
-        operation_str = self._end_action(operation_str)
-        return operation_str
+        # TODO
 
 
 @contextmanager
@@ -104,16 +105,11 @@ if __name__ == '__main__':
 
     # option1:
     device = MNTDevice(_DEVICE_ID)
-
-    device.tap([(800, 900), (900, 900)], duration=200)
-    # device.tap(600, 900)
-    # device.tap(400, 900)
-
+    device.tap([(400, 500), (500, 500)], duration=1000)
+    time.sleep(1)
     device.stop()
-    #
-    # # option2:
-    # with safe_device(_DEVICE_ID) as device:
-    #     device.tap(800, 900)
-    #     device.tap(600, 900)
-    #     device.tap(400, 900)
-    #     device.swipe(100, 100, 800, 800)
+
+    # option2:
+    with safe_device(_DEVICE_ID) as device:
+        device.tap([(400, 500), (500, 500)])
+        device.tap([(400, 500), (500, 500)])

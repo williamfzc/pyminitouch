@@ -7,7 +7,7 @@ from contextlib import contextmanager
 
 from pyminitouch.logger import logger
 from pyminitouch import config
-from pyminitouch.utils import str2byte, download_file, is_port_using
+from pyminitouch.utils import str2byte, download_file, is_port_using, is_device_connected
 
 _ADB = config.ADB_EXECUTOR
 
@@ -58,7 +58,10 @@ class MNTServer(object):
     _PORT_SET = config.PORT_SET
 
     def __init__(self, device_id):
+        assert is_device_connected(device_id)
+
         self.device_id = device_id
+        logger.info('searching a usable port ...')
         self.port = self._get_port()
         logger.info('device {} bind to port {}'.format(device_id, self.port))
 
@@ -84,7 +87,6 @@ class MNTServer(object):
         """ get a random port from port set """
         new_port = random.choice(list(cls._PORT_SET))
         if is_port_using(new_port):
-            logger.info('port {} is using, try another'.format(new_port))
             return cls._get_port()
         return new_port
 
@@ -157,4 +159,5 @@ if __name__ == '__main__':
     _DEVICE_ID = '3d33076e'
 
     with safe_connection(_DEVICE_ID) as conn:
-        conn.send('d 0 150 150 50\nc\nu 0\nc\n')
+        # conn.send('d 0 150 150 50\nc\nu 0\nc\n')
+        conn.send('d 0 500 500 50\nc\nd 1 500 600 50\nw 5000\nc\nu 0\nu 1\nc\n')

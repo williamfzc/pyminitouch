@@ -4,6 +4,7 @@ import socket
 import subprocess
 
 from pyminitouch import config
+from pyminitouch.logger import logger
 
 
 def str2byte(content):
@@ -23,15 +24,10 @@ def download_file(target_url):
 def is_port_using(port_num):
     """ if port is using by others, return True. else return False """
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.settimeout(1)
-    status = False
-    try:
-        s.connect((config.DEFAULT_HOST, int(port_num)))
-        s.shutdown(2)
-    except ConnectionRefusedError:
-        status = True
-    finally:
-        return status
+    s.settimeout(2)
+    result = s.connect_ex((config.DEFAULT_HOST, port_num))
+    # if port is using, return code should be 0. (can be connected)
+    return result == 0
 
 
 def restart_adb():
@@ -39,3 +35,15 @@ def restart_adb():
     _ADB = config.ADB_EXECUTOR
     subprocess.check_call([_ADB, 'kill-server'])
     subprocess.check_call([_ADB, 'start-server'])
+
+
+def is_device_connected(device_id):
+    """ return True if device connected, else return False """
+    _ADB = config.ADB_EXECUTOR
+    try:
+        device_name = subprocess.check_output([_ADB, '-s', device_id, 'shell', 'getprop', 'ro.product.model'])
+        device_name = device_name.decode(config.DEFAULT_CHARSET).replace('\n', '').replace('\r', '')
+        logger.info('device {} online'.format(device_name))
+    except subprocess.CalledProcessError:
+        return False
+    return True
