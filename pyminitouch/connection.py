@@ -2,6 +2,7 @@ import subprocess
 import socket
 import time
 import os
+import random
 from contextlib import contextmanager
 
 from pyminitouch.logger import logger
@@ -81,8 +82,9 @@ class MNTServer(object):
     @classmethod
     def _get_port(cls):
         """ get a random port from port set """
-        new_port = cls._PORT_SET.pop()
+        new_port = random.choice(list(cls._PORT_SET))
         if is_port_using(new_port):
+            logger.info('port {} is using, try another'.format(new_port))
             return cls._get_port()
         return new_port
 
