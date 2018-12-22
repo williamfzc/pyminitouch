@@ -6,7 +6,7 @@ from contextlib import contextmanager
 
 from pyminitouch.logger import logger
 from pyminitouch import config
-from pyminitouch.utils import str2byte, download_file
+from pyminitouch.utils import str2byte, download_file, is_port_using
 
 _ADB = config.ADB_EXECUTOR
 
@@ -47,6 +47,7 @@ class MNTInstaller(object):
 
 class MNTServer(object):
     """
+    manage connection to minitouch.
     before connection, you should execute minitouch with adb shell.
 
     command eg:
@@ -80,8 +81,10 @@ class MNTServer(object):
     @classmethod
     def _get_port(cls):
         """ get a random port from port set """
-        # TODO should check if this port has been used
-        return cls._PORT_SET.pop()
+        new_port = cls._PORT_SET.pop()
+        if is_port_using(new_port):
+            return cls._get_port()
+        return new_port
 
     def _forward_port(self):
         """ allow pc access minitouch with port """
@@ -135,6 +138,7 @@ class MNTConnection(object):
 
 @contextmanager
 def safe_connection(device_id):
+    """ safe connection runtime to use """
     # prepare for connection
     server = MNTServer(device_id)
     # real connection
