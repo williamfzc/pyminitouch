@@ -29,11 +29,9 @@ class MNTDevice(object):
         self.server = server
         self.connection = connection
 
-    def __del__(self):
+    def stop(self):
         self.connection.disconnect()
         self.server.stop()
-
-    stop = __del__
 
     @staticmethod
     def _merge_action(old_action, new_action):

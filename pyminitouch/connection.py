@@ -72,12 +72,10 @@ class MNTServer(object):
         time.sleep(1)
         assert self.heartbeat()
 
-    def __del__(self):
+    def stop(self):
         self.mnt_process and self.mnt_process.kill()
         self._PORT_SET.add(self.port)
         logger.info('device {} unbind to {}'.format(self.device_id, self.port))
-
-    stop = __del__
 
     @classmethod
     def _get_port(cls):
