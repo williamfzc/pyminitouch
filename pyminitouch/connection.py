@@ -8,6 +8,8 @@ from pyminitouch.logger import logger
 from pyminitouch import config
 from pyminitouch.utils import str2byte, download_file
 
+_ADB = config.ADB_EXECUTOR
+
 
 class MNTInstaller(object):
     """ install minitouch for android devices """
@@ -20,7 +22,7 @@ class MNTInstaller(object):
             self.download_target_mnt()
 
     def get_abi(self):
-        abi = subprocess.getoutput('adb -s {} shell getprop ro.product.cpu.abi'.format(self.device_id))
+        abi = subprocess.getoutput('{} -s {} shell getprop ro.product.cpu.abi'.format(_ADB, self.device_id))
         logger.info('device {} is {}'.format(self.device_id, abi))
         return abi
 
@@ -31,15 +33,15 @@ class MNTInstaller(object):
         mnt_path = download_file(target_url)
 
         # push and grant
-        subprocess.check_output('adb -s {} push {} /data/local/tmp/minitouch'.format(self.device_id, mnt_path))
-        subprocess.check_output('adb -s {} shell chmod 777 /data/local/tmp/minitouch'.format(self.device_id))
-        logger.info('minitouch already installed in /data/local/tmp/')
+        subprocess.check_call([_ADB, '-s', self.device_id, 'push', mnt_path, config.MNT_HOME])
+        subprocess.check_call([_ADB, '-s', self.device_id, 'shell', 'chmod', '777', config.MNT_HOME])
+        logger.info('minitouch already installed in {}'.format(config.MNT_HOME))
 
         # remove temp
         os.remove(mnt_path)
 
     def is_mnt_existed(self):
-        file_list = subprocess.check_output('adb -s {} shell ls /data/local/tmp'.format(self.device_id))
+        file_list = subprocess.check_output([_ADB, '-s', self.device_id, 'shell', 'ls', '/data/local/tmp'])
         return 'minitouch' in file_list.decode(config.DEFAULT_CHARSET)
 
 
@@ -86,7 +88,7 @@ class MNTServer(object):
     def _forward_port(self):
         """ allow pc access minitouch with port """
         command_list = [
-            'adb', '-s', self.device_id, 'forward',
+            _ADB, '-s', self.device_id, 'forward',
             'tcp:{}'.format(self.port),
             'localabstract:minitouch'
         ]
@@ -96,7 +98,7 @@ class MNTServer(object):
     def _start_mnt(self):
         """ fork a process to start minitouch on android """
         command_list = [
-            'adb', '-s', self.device_id, 'shell',
+            _ADB, '-s', self.device_id, 'shell',
             '/data/local/tmp/minitouch'
         ]
         logger.info('start minitouch: {}'.format(' '.join(command_list)))
