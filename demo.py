@@ -1,7 +1,6 @@
 import time
 
-from pyminitouch.connection import safe_connection
-from pyminitouch.actions import MNTDevice, safe_device
+from pyminitouch import safe_connection, safe_device, MNTDevice
 
 
 _DEVICE_ID = '4df189487c7b6fef'
@@ -23,7 +22,9 @@ time.sleep(1)
 
 
 # swipe
-device.swipe([(100, 100), (800, 800)])
+device.swipe([(100, 100), (500, 500)])
+# of course, with duration and pressure
+device.swipe([(100, 100), (400, 400), (200, 400)], duration=500, pressure=59)
 
 # stop minitouch
 # when it was stopped, minitouch can do nothing for device, including release.
