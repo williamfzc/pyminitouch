@@ -51,9 +51,14 @@ Please use python3.
 pip install pyminitouch
 ```
 
+## How it work?
+
+- Do the same things as [Before](#Before) in TLDR
+- Wrap it and offer pythonic API for users
+
 ## Bug & Suggestion
 
-Please let me know with issue :)
+Please let me know via issue :)
 
 ## License
 

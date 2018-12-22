@@ -12,7 +12,7 @@ python wrapper of [minitouch](https://github.com/openstf/minitouch), for better 
 
 ## TL;DR
 
-### Before
+### 以前
 
 - 检查设备CPU类型
 - 下载指定版本的minitouch（或者自己build）
@@ -24,7 +24,7 @@ python wrapper of [minitouch](https://github.com/openstf/minitouch), for better 
 
 是个非常繁琐的流程。
 
-### After
+### 现在
 
 ```python
 from pyminitouch.actions import safe_device
@@ -52,6 +52,10 @@ device.tap([(400, 600)], pressure=50)
 ```
 pip install pyminitouch
 ```
+
+## 实现原理
+
+其实跟TLDR提到的"以前的"流程是一样的。
 
 ## 意义
 
