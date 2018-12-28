@@ -91,18 +91,18 @@ class MNTDevice(object):
         x, y = points.pop(0)
         builder.append('d {} {} {} {}'.format(point_id, x, y, pressure))
         builder.commit()
+        builder.publish(self.connection)
 
         # start swiping
         for each_point in points:
+            if duration:
+                time.sleep(duration/1000)
             x, y = each_point
             builder.append('m {} {} {} {}'.format(point_id, x, y, pressure))
             builder.commit()
-            if duration:
-                builder.wait(duration)
-                builder.commit()
+            builder.publish(self.connection)
         # release
         builder.release(point_id)
-        builder.publish(self.connection)
 
 
 @contextmanager
