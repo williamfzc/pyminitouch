@@ -105,6 +105,33 @@ class MNTDevice(object):
         builder.release(point_id)
 
 
+
+class RawDevice(MNTDevice):
+
+    def commit(self):
+        self.connection.send('c\n')
+    
+    def reset(self):
+        self.connection.send('r\n')
+
+    def down(self, id, x, y, pres):
+        cmd = 'd {id} {x} {y} {pres}\n'.format(id=int(id), x=int(x), y=int(y), pres=int(pres))
+        self.connection.send(cmd)
+    
+    def move(self, id, x, y, pres):
+        cmd = 'm {id} {x} {y} {pres}\n'.format(id=int(id), x=int(x), y=int(y), pres=int(pres))
+        self.connection.send(cmd)
+
+    def up(self, id):
+        cmd = 'u {id}\n'.format(id=int(id))
+        self.connection.send(cmd)
+
+    def wait(self, ms):
+        cmd = 'w {ms}\n'.format(ms=ms)
+        self.connection.send(cmd)
+
+
+
 @contextmanager
 def safe_device(device_id):
     device = MNTDevice(device_id)
