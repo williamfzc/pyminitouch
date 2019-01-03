@@ -2,7 +2,7 @@ import time
 from contextlib import contextmanager
 
 from pyminitouch.logger import logger
-from pyminitouch.connection import MNTConnection, MNTServer
+from pyminitouch.connection import MNTConnection, MNTServer, safe_connection
 from pyminitouch import config
 from pyminitouch.utils import restart_adb
 
@@ -24,6 +24,12 @@ class CommandBuilder(object):
 
     def release(self, contact_id):
         self.append('u {}'.format(contact_id))
+
+    def press(self, contact_id, x, y, pressure):
+        self.append('d {} {} {} {}'.format(contact_id, x, y, pressure))
+
+    def move(self, contact_id, x, y, pressure):
+        self.append('m {} {} {} {}'.format(contact_id, x, y, pressure))
 
     def publish(self, connection):
         self.commit()
@@ -105,33 +111,6 @@ class MNTDevice(object):
         builder.release(point_id)
 
 
-
-class RawDevice(MNTDevice):
-
-    def commit(self):
-        self.connection.send('c\n')
-    
-    def reset(self):
-        self.connection.send('r\n')
-
-    def down(self, id, x, y, pres):
-        cmd = 'd {id} {x} {y} {pres}\n'.format(id=int(id), x=int(x), y=int(y), pres=int(pres))
-        self.connection.send(cmd)
-    
-    def move(self, id, x, y, pres):
-        cmd = 'm {id} {x} {y} {pres}\n'.format(id=int(id), x=int(x), y=int(y), pres=int(pres))
-        self.connection.send(cmd)
-
-    def up(self, id):
-        cmd = 'u {id}\n'.format(id=int(id))
-        self.connection.send(cmd)
-
-    def wait(self, ms):
-        cmd = 'w {ms}\n'.format(ms=ms)
-        self.connection.send(cmd)
-
-
-
 @contextmanager
 def safe_device(device_id):
     device = MNTDevice(device_id)
@@ -144,6 +123,31 @@ if __name__ == '__main__':
     restart_adb()
 
     _DEVICE_ID = '3d33076e'
+
+    with safe_connection(_DEVICE_ID) as d:
+        builder = CommandBuilder()
+        builder.press(0, 400, 400, 50)
+        builder.commit()
+        builder.move(0, 500, 500, 50)
+        builder.commit()
+        builder.move(0, 800, 400, 50)
+        builder.commit()
+        builder.release(0)
+        builder.commit()
+        builder.publish(d)
+
+    with safe_device(_DEVICE_ID) as d:
+        builder = CommandBuilder()
+        builder.press(0, 400, 400, 50)
+        builder.commit()
+        builder.move(0, 500, 500, 50)
+        builder.commit()
+        builder.move(0, 800, 400, 50)
+        builder.commit()
+        builder.release(0)
+        builder.commit()
+        builder.publish(d.connection)
+
 
     # option1:
     device = MNTDevice(_DEVICE_ID)
