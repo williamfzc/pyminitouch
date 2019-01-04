@@ -2,13 +2,31 @@ import time
 from contextlib import contextmanager
 
 from pyminitouch.logger import logger
-from pyminitouch.connection import MNTConnection, MNTServer
+from pyminitouch.connection import MNTConnection, MNTServer, safe_connection
 from pyminitouch import config
 from pyminitouch.utils import restart_adb
 
 
 class CommandBuilder(object):
-    """ build command str for minitouch """
+    """ build command str for minitouch
+
+    You can use this, to custom actions as you wish.
+    eg:
+        with safe_connection(_DEVICE_ID) as connection:
+            builder = CommandBuilder()
+            builder.down(0, 400, 400, 50)
+            builder.commit()
+            builder.move(0, 500, 500, 50)
+            builder.commit()
+            builder.move(0, 800, 400, 50)
+            builder.commit()
+            builder.up(0)
+            builder.commit()
+            builder.publish(connection)
+
+    use `d.connection` to get `connection` from device
+    """
+
     # TODO (x, y) can not beyond the screen size
     def __init__(self):
         self._content = ''
@@ -17,15 +35,27 @@ class CommandBuilder(object):
         self._content += new_content + '\n'
 
     def commit(self):
+        """ minitouch command, eg: 'c\n' """
         self.append('c')
 
     def wait(self, ms):
+        """ minitouch command, eg: 'w 1000\n' """
         self.append('w {}'.format(ms))
 
-    def release(self, contact_id):
+    def up(self, contact_id):
+        """ minitouch command, eg: 'u 0\n' """
         self.append('u {}'.format(contact_id))
 
+    def down(self, contact_id, x, y, pressure):
+        """ minitouch command, eg: 'd 0 200 200 50\n' """
+        self.append('d {} {} {} {}'.format(contact_id, x, y, pressure))
+
+    def move(self, contact_id, x, y, pressure):
+        """ minitouch command, eg: 'm 0 200 200 50\n' """
+        self.append('m {} {} {} {}'.format(contact_id, x, y, pressure))
+
     def publish(self, connection):
+        """ apply current command, to your device """
         self.commit()
         final_content = self._content
         logger.info('send operation: {}'.format(final_content.replace('\n', '\\n')))
@@ -34,6 +64,7 @@ class CommandBuilder(object):
         self.reset()
 
     def reset(self):
+        """ clear current command """
         self._content = ''
 
 
@@ -73,7 +104,7 @@ class MNTDevice(object):
             builder.commit()
         # release
         for each_id in range(len(points)):
-            builder.release(each_id)
+            builder.up(each_id)
         builder.publish(self.connection)
 
     def swipe(self, points, pressure=100, duration=None):
@@ -96,13 +127,13 @@ class MNTDevice(object):
         # start swiping
         for each_point in points:
             if duration:
-                time.sleep(duration/1000)
+                time.sleep(duration / 1000)
             x, y = each_point
             builder.append('m {} {} {} {}'.format(point_id, x, y, pressure))
             builder.commit()
             builder.publish(self.connection)
         # release
-        builder.release(point_id)
+        builder.up(point_id)
 
 
 @contextmanager
@@ -117,6 +148,30 @@ if __name__ == '__main__':
     restart_adb()
 
     _DEVICE_ID = '3d33076e'
+
+    with safe_connection(_DEVICE_ID) as d:
+        builder = CommandBuilder()
+        builder.down(0, 400, 400, 50)
+        builder.commit()
+        builder.move(0, 500, 500, 50)
+        builder.commit()
+        builder.move(0, 800, 400, 50)
+        builder.commit()
+        builder.up(0)
+        builder.commit()
+        builder.publish(d)
+
+    with safe_device(_DEVICE_ID) as d:
+        builder = CommandBuilder()
+        builder.down(0, 400, 400, 50)
+        builder.commit()
+        builder.move(0, 500, 500, 50)
+        builder.commit()
+        builder.move(0, 800, 400, 50)
+        builder.commit()
+        builder.up(0)
+        builder.commit()
+        builder.publish(d.connection)
 
     # option1:
     device = MNTDevice(_DEVICE_ID)
