@@ -30,7 +30,10 @@ time.sleep(1)
 # swipe
 device.swipe([(100, 100), (500, 500)])
 # of course, with duration and pressure
-device.swipe([(100, 100), (400, 400), (200, 400)], duration=500, pressure=59)
+device.swipe([(100, 100), (400, 400), (200, 400)], duration=500, pressure=50)
+
+# extra functions ( their names start with 'ext_' )
+device.ext_smooth_swipe([(100, 100), (400, 400), (200, 400)], duration=500, pressure=50, part=20)
 
 # stop minitouch
 # when it was stopped, minitouch can do nothing for device, including release.
