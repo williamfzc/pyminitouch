@@ -25,7 +25,7 @@ An unfriendly process.
 ### After
 
 ```python
-from pyminitouch.actions import safe_device
+from pyminitouch import MNTDevice
 
 
 _DEVICE_ID = '123456F'
@@ -40,6 +40,8 @@ device.tap([(400, 600)], pressure=50)
 
 # ... and something else you want, just like minitouch itself!
 ```
+
+You don't need to care about installation/device version/dependencies anymore. All you need is running the script.
 
 Read [demo.py](demo.py) for detail.
 

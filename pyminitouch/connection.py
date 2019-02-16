@@ -14,6 +14,7 @@ _ADB = config.ADB_EXECUTOR
 
 class MNTInstaller(object):
     """ install minitouch for android devices """
+
     def __init__(self, device_id):
         self.device_id = device_id
         self.abi = self.get_abi()
@@ -75,7 +76,7 @@ class MNTServer(object):
 
         # make sure it's up
         time.sleep(1)
-        assert self.heartbeat()
+        assert self.heartbeat(), 'minitouch did not work. Try to install it by yourself?'
 
     def stop(self):
         self.mnt_process and self.mnt_process.kill()
@@ -126,7 +127,29 @@ class MNTConnection(object):
         client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         client.connect((self._DEFAULT_HOST, self.port))
         self.client = client
-        logger.info('minitouch connected on {}'.format(self.port))
+
+        # get minitouch server info
+        socket_out = client.makefile()
+
+        # v <version>
+        # protocol version, usually it is 1. needn't use this
+        socket_out.readline()
+
+        # ^ <max-contacts> <max-x> <max-y> <max-pressure>
+        _, max_contacts, max_x, max_y, max_pressure, *_ = \
+            socket_out.readline().replace('\n', '').replace('\r', '').split(' ')
+        self.max_contacts = max_contacts
+        self.max_x = max_x
+        self.max_y = max_y
+        self.max_pressure = max_pressure
+
+        # $ <pid>
+        _, pid = socket_out.readline().replace('\n', '').replace('\r', '').split(' ')
+        self.pid = pid
+
+        logger.info('minitouch running on port: {}, pid: {}'.format(self.port, self.pid))
+        logger.info('max_contact: {}; max_x: {}; max_y: {}; max_pressure: {}'.format(
+            max_contacts, max_x, max_y, max_pressure))
 
     def disconnect(self):
         self.client and self.client.close()

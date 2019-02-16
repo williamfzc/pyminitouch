@@ -27,7 +27,7 @@ python wrapper of [minitouch](https://github.com/openstf/minitouch), for better 
 ### 现在
 
 ```python
-from pyminitouch.actions import safe_device
+from pyminitouch import MNTDevice
 
 
 _DEVICE_ID = '123456F'
@@ -42,6 +42,8 @@ device.tap([(400, 600)], pressure=50)
 
 # 可以直接用简洁的API调用minitouch提供的强大功能！
 ```
+
+你不再需要关心依赖安装、设备版本之类的事情。直接跑脚本就行了！
 
 更多使用方式见 [demo.py](demo.py)
 
