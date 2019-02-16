@@ -104,6 +104,35 @@ class MNTDevice(object):
         builder.release(point_id)
         builder.publish(self.connection)
 
+    # extra functions' name starts with 'ext_'
+    def ext_smooth_swipe(self, points, pressure=100, duration=None, part=10):
+        """
+        smoothly swipe between points, one by one
+        it will split distance between points into pieces
+
+        e.g:
+            before:
+                points == [(100, 100), (500, 500)]
+                part == 8
+            after:
+                points == [(100, 100), (150, 150), (200, 200), ... , (500, 500)]
+
+        :param points:
+        :param pressure:
+        :param duration:
+        :param part: default to 10
+        :return:
+        """
+        for each_index in range(len(points) - 1):
+            cur_point = points[each_index]
+            next_point = points[each_index + 1]
+
+            offset = (int((next_point[0] - cur_point[0]) / part),
+                      int((next_point[1] - cur_point[1]) / part))
+            new_points = [(cur_point[0] + i * offset[0], cur_point[1] + i * offset[1]) for i in range(part)]
+            new_points.append(points[-1])
+            self.swipe(new_points, pressure=pressure, duration=duration)
+
 
 @contextmanager
 def safe_device(device_id):
@@ -116,7 +145,7 @@ def safe_device(device_id):
 if __name__ == '__main__':
     restart_adb()
 
-    _DEVICE_ID = '3d33076e'
+    _DEVICE_ID = '4df189487c7b6fef'
 
     # option1:
     device = MNTDevice(_DEVICE_ID)
