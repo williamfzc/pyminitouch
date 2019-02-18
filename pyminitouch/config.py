@@ -20,7 +20,3 @@ MNT_HOME = '/data/local/tmp/minitouch'
 SYSTEM_NAME = platform.system()
 NEED_SHELL = SYSTEM_NAME != 'Windows'
 ADB_EXECUTOR = 'adb'
-if SYSTEM_NAME == 'Windows':
-    ADB_EXECUTOR = subprocess.getoutput('where adb')
-else:
-    ADB_EXECUTOR = subprocess.getoutput('which adb')
