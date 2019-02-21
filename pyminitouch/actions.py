@@ -69,6 +69,7 @@ class CommandBuilder(object):
 
 
 class MNTDevice(object):
+    """ minitouch device object """
     def __init__(self, device_id):
         self.device_id = device_id
 
