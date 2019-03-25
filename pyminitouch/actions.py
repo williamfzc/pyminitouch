@@ -8,10 +8,10 @@ from pyminitouch.utils import restart_adb
 
 
 class CommandBuilder(object):
-    """ build command str for minitouch
+    """Build command str for minitouch.
 
-    You can use this, to custom actions as you wish.
-    eg:
+    You can use this, to custom actions as you wish::
+
         with safe_connection(_DEVICE_ID) as connection:
             builder = CommandBuilder()
             builder.down(0, 400, 400, 50)
@@ -35,27 +35,27 @@ class CommandBuilder(object):
         self._content += new_content + '\n'
 
     def commit(self):
-        """ minitouch command, eg: 'c\n' """
+        """ add minitouch command: 'c\n' """
         self.append('c')
 
     def wait(self, ms):
-        """ minitouch command, eg: 'w 1000\n' """
+        """ add minitouch command: 'w <ms>\n' """
         self.append('w {}'.format(ms))
 
     def up(self, contact_id):
-        """ minitouch command, eg: 'u 0\n' """
+        """ add minitouch command: 'u <contact_id>\n' """
         self.append('u {}'.format(contact_id))
 
     def down(self, contact_id, x, y, pressure):
-        """ minitouch command, eg: 'd 0 200 200 50\n' """
+        """ add minitouch command: 'd <contact_id> <x> <y> <pressure>\n' """
         self.append('d {} {} {} {}'.format(contact_id, x, y, pressure))
 
     def move(self, contact_id, x, y, pressure):
-        """ minitouch command, eg: 'm 0 200 200 50\n' """
+        """ add minitouch command: 'm <contact_id> <x> <y> <pressure>\n' """
         self.append('m {} {} {} {}'.format(contact_id, x, y, pressure))
 
     def publish(self, connection):
-        """ apply current command, to your device """
+        """ apply current commands (_content), to your device """
         self.commit()
         final_content = self._content
         logger.info('send operation: {}'.format(final_content.replace('\n', '\\n')))
@@ -64,12 +64,48 @@ class CommandBuilder(object):
         self.reset()
 
     def reset(self):
-        """ clear current command """
+        """ clear current commands (_content) """
         self._content = ''
 
 
 class MNTDevice(object):
-    """ minitouch device object """
+    """ minitouch device object
+
+    Sample::
+
+        device = MNTDevice(_DEVICE_ID)
+
+        # It's also very important to note that the maximum X and Y coordinates may, but usually do not, match the display size.
+        # so you need to calculate position by yourself, and you can get maximum X and Y by this way:
+        print('max x: ', device.connection.max_x)
+        print('max y: ', device.connection.max_y)
+
+        # single-tap
+        device.tap([(400, 600)])
+        # multi-tap
+        device.tap([(400, 400), (600, 600)])
+        # set the pressure, default == 100
+        device.tap([(400, 600)], pressure=50)
+
+        # long-time-tap
+        # for long-click, you should control time delay by yourself
+        # because minitouch return nothing when actions done
+        # we will never know the time when it finished
+        device.tap([(400, 600)], duration=1000)
+        time.sleep(1)
+
+        # swipe
+        device.swipe([(100, 100), (500, 500)])
+        # of course, with duration and pressure
+        device.swipe([(100, 100), (400, 400), (200, 400)], duration=500, pressure=50)
+
+        # extra functions ( their names start with 'ext_' )
+        device.ext_smooth_swipe([(100, 100), (400, 400), (200, 400)], duration=500, pressure=50, part=20)
+
+        # stop minitouch
+        # when it was stopped, minitouch can do nothing for device, including release.
+        device.stop()
+    """
     def __init__(self, device_id):
         self.device_id = device_id
 
@@ -94,19 +130,19 @@ class MNTDevice(object):
         :param duration:
         :return:
         """
-        builder = CommandBuilder()
+        _builder = CommandBuilder()
         for point_id, each_point in enumerate(points):
             x, y = each_point
-            builder.append('d {} {} {} {}'.format(point_id, x, y, pressure))
-        builder.commit()
+            _builder.append('d {} {} {} {}'.format(point_id, x, y, pressure))
+        _builder.commit()
         # apply duration
         if duration:
-            builder.wait(duration)
-            builder.commit()
+            _builder.wait(duration)
+            _builder.commit()
         # release
         for each_id in range(len(points)):
-            builder.up(each_id)
-        builder.publish(self.connection)
+            _builder.up(each_id)
+        _builder.publish(self.connection)
 
     def swipe(self, points, pressure=100, duration=None):
         """
@@ -117,24 +153,24 @@ class MNTDevice(object):
         :param duration:
         :return:
         """
-        builder = CommandBuilder()
+        _builder = CommandBuilder()
         point_id = 0
         # tap the first point
         x, y = points.pop(0)
-        builder.append('d {} {} {} {}'.format(point_id, x, y, pressure))
-        builder.commit()
-        builder.publish(self.connection)
+        _builder.append('d {} {} {} {}'.format(point_id, x, y, pressure))
+        _builder.commit()
+        _builder.publish(self.connection)
 
         # start swiping
         for each_point in points:
             if duration:
                 time.sleep(duration / 1000)
             x, y = each_point
-            builder.append('m {} {} {} {}'.format(point_id, x, y, pressure))
-            builder.commit()
-            builder.publish(self.connection)
+            _builder.append('m {} {} {} {}'.format(point_id, x, y, pressure))
+            _builder.commit()
+            _builder.publish(self.connection)
         # release
-        builder.up(point_id)
+        _builder.up(point_id)
 
     # extra functions' name starts with 'ext_'
     def ext_smooth_swipe(self, points, pressure=100, duration=None, part=10):
@@ -142,12 +178,14 @@ class MNTDevice(object):
         smoothly swipe between points, one by one
         it will split distance between points into pieces
 
-        e.g:
-            before:
-                points == [(100, 100), (500, 500)]
-                part == 8
-            after:
-                points == [(100, 100), (150, 150), (200, 200), ... , (500, 500)]
+        before::
+
+            points == [(100, 100), (500, 500)]
+            part == 8
+
+        after::
+
+            points == [(100, 100), (150, 150), (200, 200), ... , (500, 500)]
 
         :param points:
         :param pressure:
@@ -168,10 +206,11 @@ class MNTDevice(object):
 
 @contextmanager
 def safe_device(device_id):
-    device = MNTDevice(device_id)
-    yield device
+    """ use MNTDevice safely """
+    _device = MNTDevice(device_id)
+    yield _device
     time.sleep(config.DEFAULT_DELAY)
-    device.stop()
+    _device.stop()
 
 
 if __name__ == '__main__':

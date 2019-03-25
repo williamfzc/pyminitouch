@@ -52,9 +52,17 @@ class MNTServer(object):
     manage connection to minitouch.
     before connection, you should execute minitouch with adb shell.
 
-    command eg:
+    command eg::
+
         adb forward tcp:{some_port} localabstract:minitouch
         adb shell /data/local/tmp/minitouch
+
+    you would better use it via safe_connection ::
+
+        _DEVICE_ID = '123456F'
+
+        with safe_connection(_DEVICE_ID) as conn:
+            conn.send('d 0 500 500 50\nc\nd 1 500 600 50\nw 5000\nc\nu 0\nu 1\nc\n')
     """
     _PORT_SET = config.PORT_SET
 
