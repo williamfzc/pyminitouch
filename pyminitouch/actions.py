@@ -124,13 +124,14 @@ class MNTDevice(object):
         self.connection.disconnect()
         self.server.stop()
 
-    def tap(self, points, pressure=100, duration=None):
+    def tap(self, points, pressure=100, duration=None, no_up=None):
         """
         tap on screen, with pressure/duration
 
         :param points: list, looks like [(x1, y1), (x2, y2)]
         :param pressure: default == 100
         :param duration:
+        :param no_up: if true, do not append 'up' at the end
         :return:
         """
         points = [list(map(int, each_point)) for each_point in points]
@@ -138,47 +139,61 @@ class MNTDevice(object):
         _builder = CommandBuilder()
         for point_id, each_point in enumerate(points):
             x, y = each_point
-            _builder.append('d {} {} {} {}'.format(point_id, x, y, pressure))
+            _builder.down(point_id, x, y, pressure)
         _builder.commit()
+
         # apply duration
         if duration:
             _builder.wait(duration)
             _builder.commit()
-        # release
-        for each_id in range(len(points)):
-            _builder.up(each_id)
+
+        # need release?
+        if not no_up:
+            for each_id in range(len(points)):
+                _builder.up(each_id)
+
         _builder.publish(self.connection)
 
-    def swipe(self, points, pressure=100, duration=None):
+    def swipe(self, points, pressure=100, duration=None, no_down=None, no_up=None):
         """
         swipe between points, one by one
 
         :param points: [(400, 500), (500, 500)]
         :param pressure: default == 100
         :param duration:
+        :param no_down: will not 'down' at the beginning
+        :param no_up: will not 'up' at the end
         :return:
         """
         points = [list(map(int, each_point)) for each_point in points]
 
         _builder = CommandBuilder()
         point_id = 0
+
         # tap the first point
-        x, y = points.pop(0)
-        _builder.append('d {} {} {} {}'.format(point_id, x, y, pressure))
-        _builder.commit()
-        _builder.publish(self.connection)
+        if not no_down:
+            x, y = points.pop(0)
+            _builder.down(point_id, x, y, pressure)
+            _builder.publish(self.connection)
 
         # start swiping
         for each_point in points:
-            if duration:
-                time.sleep(duration / 1000)
             x, y = each_point
-            _builder.append('m {} {} {} {}'.format(point_id, x, y, pressure))
-            _builder.commit()
+            _builder.move(point_id, x, y, pressure)
+
+            # add delay between points
+            if duration:
+                _builder.wait(duration)
+
             _builder.publish(self.connection)
+
         # release
+        if not no_up:
+            _builder.up(point_id)
+            _builder.publish(self.connection)
 
     # extra functions' name starts with 'ext_'
+    def ext_smooth_swipe(self, points, pressure=100, duration=None, part=None, no_down=None, no_up=None):
         """
         smoothly swipe between points, one by one
         it will split distance between points into pieces
@@ -196,19 +211,22 @@ class MNTDevice(object):
         :param pressure:
         :param duration:
         :param part: default to 10
-        :param hold: will not release at the end
+        :param no_down: will not 'down' at the beginning
+        :param no_up: will not 'up' at the end
         :return:
         """
+        if not part:
+            part = 10
+
         points = [list(map(int, each_point)) for each_point in points]
 
         for each_index in range(len(points) - 1):
             cur_point = points[each_index]
             next_point = points[each_index + 1]
 
-            offset = (int((next_point[0] - cur_point[0]) / part),
-                      int((next_point[1] - cur_point[1]) / part))
-            new_points = [(cur_point[0] + i * offset[0], cur_point[1] + i * offset[1]) for i in range(part)]
-            self.swipe(new_points, pressure=pressure, duration=duration)
+            offset = (int((next_point[0] - cur_point[0]) / part), int((next_point[1] - cur_point[1]) / part))
+            new_points = [(cur_point[0] + i * offset[0], cur_point[1] + i * offset[1]) for i in range(part + 1)]
+            self.swipe(new_points, pressure=pressure, duration=duration, no_down=no_down, no_up=no_up)
 
 
 @contextmanager
