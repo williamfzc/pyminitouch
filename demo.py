@@ -21,11 +21,7 @@ device.tap([(400, 400), (600, 600)])
 device.tap([(400, 600)], pressure=50)
 
 # long-time-tap
-# for long-click, you should control time delay by yourself
-# because minitouch return nothing when actions done
-# we will never know the time when it finished
-device.tap([(400, 600)], duration=1000)
-time.sleep(1)
+device.tap([(400, 600)], duration=2000)
 
 # swipe
 device.swipe([(100, 100), (500, 500)])

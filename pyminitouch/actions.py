@@ -30,6 +30,7 @@ class CommandBuilder(object):
     # TODO (x, y) can not beyond the screen size
     def __init__(self):
         self._content = ''
+        self._delay = 0
 
     def append(self, new_content):
         self._content += new_content + '\n'
@@ -41,6 +42,7 @@ class CommandBuilder(object):
     def wait(self, ms):
         """ add minitouch command: 'w <ms>\n' """
         self.append('w {}'.format(ms))
+        self._delay += ms
 
     def up(self, contact_id):
         """ add minitouch command: 'u <contact_id>\n' """
@@ -59,13 +61,14 @@ class CommandBuilder(object):
         self.commit()
         final_content = self._content
         logger.info('send operation: {}'.format(final_content.replace('\n', '\\n')))
-        time.sleep(config.DEFAULT_DELAY)
         connection.send(final_content)
+        time.sleep(self._delay / 1000 + config.DEFAULT_DELAY)
         self.reset()
 
     def reset(self):
         """ clear current commands (_content) """
         self._content = ''
+        self._delay = 0
 
 
 class MNTDevice(object):
@@ -174,10 +177,8 @@ class MNTDevice(object):
             _builder.commit()
             _builder.publish(self.connection)
         # release
-        _builder.up(point_id)
 
     # extra functions' name starts with 'ext_'
-    def ext_smooth_swipe(self, points, pressure=100, duration=None, part=10):
         """
         smoothly swipe between points, one by one
         it will split distance between points into pieces
@@ -195,6 +196,7 @@ class MNTDevice(object):
         :param pressure:
         :param duration:
         :param part: default to 10
+        :param hold: will not release at the end
         :return:
         """
         points = [list(map(int, each_point)) for each_point in points]
@@ -206,7 +208,6 @@ class MNTDevice(object):
             offset = (int((next_point[0] - cur_point[0]) / part),
                       int((next_point[1] - cur_point[1]) / part))
             new_points = [(cur_point[0] + i * offset[0], cur_point[1] + i * offset[1]) for i in range(part)]
-            new_points.append(points[-1])
             self.swipe(new_points, pressure=pressure, duration=duration)
 
 
