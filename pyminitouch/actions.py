@@ -130,6 +130,8 @@ class MNTDevice(object):
         :param duration:
         :return:
         """
+        points = [list(map(int, each_point)) for each_point in points]
+
         _builder = CommandBuilder()
         for point_id, each_point in enumerate(points):
             x, y = each_point
@@ -153,6 +155,8 @@ class MNTDevice(object):
         :param duration:
         :return:
         """
+        points = [list(map(int, each_point)) for each_point in points]
+
         _builder = CommandBuilder()
         point_id = 0
         # tap the first point
@@ -193,6 +197,8 @@ class MNTDevice(object):
         :param part: default to 10
         :return:
         """
+        points = [list(map(int, each_point)) for each_point in points]
+
         for each_index in range(len(points) - 1):
             cur_point = points[each_index]
             next_point = points[each_index + 1]
