@@ -23,10 +23,19 @@ device.tap([(400, 600)], pressure=50)
 # long-time-tap
 device.tap([(400, 600)], duration=2000)
 
+# and no up at the end. you can continue your actions after that. default to false
+device.tap([(400, 600)], duration=2000, no_up=True)
+
 # swipe
 device.swipe([(100, 100), (500, 500)])
 # of course, with duration and pressure
 device.swipe([(100, 100), (400, 400), (200, 400)], duration=500, pressure=50)
+
+# and no down at the beginning or no up at the end.
+# you can apply a special action before swipe, to build a complex action.
+device.tap([(400, 600)], duration=2000, no_up=True)
+device.swipe([(400, 600), (400, 400), (200, 400)], duration=500, pressure=50, no_down=True, no_up=True)
+device.swipe([(200, 400), (400, 400), (400, 600)], duration=500, pressure=50, no_down=True)
 
 # extra functions ( their names start with 'ext_' )
 device.ext_smooth_swipe([(100, 100), (400, 400), (200, 400)], duration=500, pressure=50, part=20)
