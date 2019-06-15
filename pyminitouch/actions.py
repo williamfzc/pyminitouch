@@ -184,8 +184,9 @@ class MNTDevice(object):
             # add delay between points
             if duration:
                 _builder.wait(duration)
+            _builder.commit()
 
-            _builder.publish(self.connection)
+        _builder.publish(self.connection)
 
         # release
         if not no_up:
