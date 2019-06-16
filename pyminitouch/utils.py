@@ -25,9 +25,13 @@ def is_port_using(port_num):
     """ if port is using by others, return True. else return False """
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.settimeout(2)
-    result = s.connect_ex((config.DEFAULT_HOST, port_num))
-    # if port is using, return code should be 0. (can be connected)
-    return result == 0
+
+    try:
+        result = s.connect_ex((config.DEFAULT_HOST, port_num))
+        # if port is using, return code should be 0. (can be connected)
+        return result == 0
+    finally:
+        s.close()
 
 
 def restart_adb():
