@@ -39,6 +39,9 @@ device.tap([(400, 400), (600, 600)])
 device.tap([(400, 600)], pressure=50)
 
 # ... and something else you want, just like minitouch itself!
+
+# and, after usage, you MUST call function `stop` to stop service
+device.stop()
 ```
 
 You don't need to care about installation/device version/dependencies anymore. All you need is running the script.
