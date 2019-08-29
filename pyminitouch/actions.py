@@ -111,14 +111,19 @@ class MNTDevice(object):
     """
     def __init__(self, device_id):
         self.device_id = device_id
+        self.server = None
+        self.connection = None
+        self.start()
 
+    def reset(self):
+        self.stop()
+        self.start()
+
+    def start(self):
         # prepare for connection
-        server = MNTServer(device_id)
+        self.server = MNTServer(self.device_id)
         # real connection
-        connection = MNTConnection(server.port)
-
-        self.server = server
-        self.connection = connection
+        self.connection = MNTConnection(self.server.port)
 
     def stop(self):
         self.connection.disconnect()
