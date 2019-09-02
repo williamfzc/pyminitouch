@@ -239,9 +239,11 @@ class MNTDevice(object):
 def safe_device(device_id):
     """ use MNTDevice safely """
     _device = MNTDevice(device_id)
-    yield _device
-    time.sleep(config.DEFAULT_DELAY)
-    _device.stop()
+    try:
+        yield _device
+    finally:
+        time.sleep(config.DEFAULT_DELAY)
+        _device.stop()
 
 
 if __name__ == '__main__':

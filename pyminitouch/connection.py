@@ -84,7 +84,7 @@ class MNTServer(object):
 
         # make sure it's up
         time.sleep(1)
-        assert self.heartbeat(), 'minitouch did not work. Try to install it by yourself?'
+        assert self.heartbeat(), 'minitouch did not work. maybe another minitouch is working?'
 
     def stop(self):
         self.mnt_process and self.mnt_process.kill()
@@ -174,16 +174,17 @@ class MNTConnection(object):
 @contextmanager
 def safe_connection(device_id):
     """ safe connection runtime to use """
+
     # prepare for connection
     server = MNTServer(device_id)
     # real connection
     connection = MNTConnection(server.port)
-
-    yield connection
-
-    # disconnect
-    connection.disconnect()
-    server.stop()
+    try:
+        yield connection
+    finally:
+        # disconnect
+        connection.disconnect()
+        server.stop()
 
 
 if __name__ == '__main__':
