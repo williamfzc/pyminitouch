@@ -106,8 +106,9 @@ class MNTServer(object):
             'tcp:{}'.format(self.port),
             'localabstract:minitouch'
         ]
-        logger.info('forward command: {}'.format(' '.join(command_list)))
-        assert not subprocess.check_output(command_list)
+        logger.debug('forward command: {}'.format(' '.join(command_list)))
+        output = subprocess.check_output(command_list)
+        logger.debug("output: {}".format(output))
 
     def _start_mnt(self):
         """ fork a process to start minitouch on android """
