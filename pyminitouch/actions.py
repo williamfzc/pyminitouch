@@ -29,45 +29,45 @@ class CommandBuilder(object):
 
     # TODO (x, y) can not beyond the screen size
     def __init__(self):
-        self._content = ''
+        self._content = ""
         self._delay = 0
 
     def append(self, new_content):
-        self._content += new_content + '\n'
+        self._content += new_content + "\n"
 
     def commit(self):
         """ add minitouch command: 'c\n' """
-        self.append('c')
+        self.append("c")
 
     def wait(self, ms):
         """ add minitouch command: 'w <ms>\n' """
-        self.append('w {}'.format(ms))
+        self.append("w {}".format(ms))
         self._delay += ms
 
     def up(self, contact_id):
         """ add minitouch command: 'u <contact_id>\n' """
-        self.append('u {}'.format(contact_id))
+        self.append("u {}".format(contact_id))
 
     def down(self, contact_id, x, y, pressure):
         """ add minitouch command: 'd <contact_id> <x> <y> <pressure>\n' """
-        self.append('d {} {} {} {}'.format(contact_id, x, y, pressure))
+        self.append("d {} {} {} {}".format(contact_id, x, y, pressure))
 
     def move(self, contact_id, x, y, pressure):
         """ add minitouch command: 'm <contact_id> <x> <y> <pressure>\n' """
-        self.append('m {} {} {} {}'.format(contact_id, x, y, pressure))
+        self.append("m {} {} {} {}".format(contact_id, x, y, pressure))
 
     def publish(self, connection):
         """ apply current commands (_content), to your device """
         self.commit()
         final_content = self._content
-        logger.info('send operation: {}'.format(final_content.replace('\n', '\\n')))
+        logger.info("send operation: {}".format(final_content.replace("\n", "\\n")))
         connection.send(final_content)
         time.sleep(self._delay / 1000 + config.DEFAULT_DELAY)
         self.reset()
 
     def reset(self):
         """ clear current commands (_content) """
-        self._content = ''
+        self._content = ""
         self._delay = 0
 
 
@@ -109,6 +109,7 @@ class MNTDevice(object):
         # when it was stopped, minitouch can do nothing for device, including release.
         device.stop()
     """
+
     def __init__(self, device_id):
         self.device_id = device_id
         self.server = None
@@ -199,7 +200,9 @@ class MNTDevice(object):
             _builder.publish(self.connection)
 
     # extra functions' name starts with 'ext_'
-    def ext_smooth_swipe(self, points, pressure=100, duration=None, part=None, no_down=None, no_up=None):
+    def ext_smooth_swipe(
+        self, points, pressure=100, duration=None, part=None, no_down=None, no_up=None
+    ):
         """
         smoothly swipe between points, one by one
         it will split distance between points into pieces
@@ -230,9 +233,21 @@ class MNTDevice(object):
             cur_point = points[each_index]
             next_point = points[each_index + 1]
 
-            offset = (int((next_point[0] - cur_point[0]) / part), int((next_point[1] - cur_point[1]) / part))
-            new_points = [(cur_point[0] + i * offset[0], cur_point[1] + i * offset[1]) for i in range(part + 1)]
-            self.swipe(new_points, pressure=pressure, duration=duration, no_down=no_down, no_up=no_up)
+            offset = (
+                int((next_point[0] - cur_point[0]) / part),
+                int((next_point[1] - cur_point[1]) / part),
+            )
+            new_points = [
+                (cur_point[0] + i * offset[0], cur_point[1] + i * offset[1])
+                for i in range(part + 1)
+            ]
+            self.swipe(
+                new_points,
+                pressure=pressure,
+                duration=duration,
+                no_down=no_down,
+                no_up=no_up,
+            )
 
 
 @contextmanager
@@ -246,10 +261,10 @@ def safe_device(device_id):
         _device.stop()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     restart_adb()
 
-    _DEVICE_ID = '4df189487c7b6fef'
+    _DEVICE_ID = "4df189487c7b6fef"
 
     with safe_connection(_DEVICE_ID) as d:
         builder = CommandBuilder()

@@ -1,6 +1,6 @@
 from pyminitouch import safe_connection, CommandBuilder
 
-_DEVICE_ID = '123456F'
+_DEVICE_ID = "123456F"
 
 
 with safe_connection(_DEVICE_ID) as connection:

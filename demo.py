@@ -1,8 +1,6 @@
-import time
-
 from pyminitouch import safe_connection, safe_device, MNTDevice, CommandBuilder
 
-_DEVICE_ID = '3d33076e'
+_DEVICE_ID = "123456F"
 
 # ---
 
@@ -10,8 +8,8 @@ device = MNTDevice(_DEVICE_ID)
 
 # It's also very important to note that the maximum X and Y coordinates may, but usually do not, match the display size.
 # so you need to calculate position by yourself, and you can get maximum X and Y by this way:
-print('max x: ', device.connection.max_x)
-print('max y: ', device.connection.max_y)
+print("max x: ", device.connection.max_x)
+print("max y: ", device.connection.max_y)
 
 # single-tap
 device.tap([(400, 600)])
@@ -34,11 +32,21 @@ device.swipe([(100, 100), (400, 400), (200, 400)], duration=500, pressure=50)
 # and no down at the beginning or no up at the end.
 # you can apply a special action before swipe, to build a complex action.
 device.tap([(400, 600)], duration=2000, no_up=True)
-device.swipe([(400, 600), (400, 400), (200, 400)], duration=500, pressure=50, no_down=True, no_up=True)
-device.swipe([(200, 400), (400, 400), (400, 600)], duration=500, pressure=50, no_down=True)
+device.swipe(
+    [(400, 600), (400, 400), (200, 400)],
+    duration=500,
+    pressure=50,
+    no_down=True,
+    no_up=True,
+)
+device.swipe(
+    [(200, 400), (400, 400), (400, 600)], duration=500, pressure=50, no_down=True
+)
 
 # extra functions ( their names start with 'ext_' )
-device.ext_smooth_swipe([(100, 100), (400, 400), (200, 400)], duration=500, pressure=50, part=20)
+device.ext_smooth_swipe(
+    [(100, 100), (400, 400), (200, 400)], duration=500, pressure=50, part=20
+)
 
 # stop minitouch
 # when it was stopped, minitouch can do nothing for device, including release.
@@ -78,12 +86,12 @@ with safe_connection(_DEVICE_ID) as connection:
 
 # Of course, you may want to operate it just like using minitouch itself.
 # send raw text to it
-_OPERATION = '''
+_OPERATION = """
 d 0 150 150 50\n
 c\n
 u 0\n
 c\n
-'''
+"""
 
 with safe_connection(_DEVICE_ID) as conn:
     conn.send(_OPERATION)
