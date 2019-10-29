@@ -84,7 +84,7 @@ class MNTServer(object):
 
         # make sure it's up
         time.sleep(1)
-        assert self.heartbeat(), 'minitouch did not work. maybe another minitouch is working?'
+        assert self.heartbeat(), 'minitouch did not work. see https://github.com/williamfzc/pyminitouch/issues/11'
 
     def stop(self):
         self.mnt_process and self.mnt_process.kill()
